@@ -25,4 +25,10 @@
 
 5. To stop the program, press ```Ctrl + C``` in the terminal
 
-6. The data will be saved in the same folder as the script with the name format specified in the script 
+6. The data will be saved in the same folder as the script with the name format specified in the script
+
+## Important line numbers 
+
+Line 108: "How long the bird has to sit on the perch to trigger a trial/audio stimulus?" 
+
+Line 157: Intertrial interval "How long to wait before next trial?"
