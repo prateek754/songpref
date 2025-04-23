@@ -1,4 +1,4 @@
-## The readme file contains information about running the python code in Raspberry Pi
+## Information about running the python code in Raspberry Pi
 
 1. Check if python is already installed on Pi
   ```bash
