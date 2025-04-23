@@ -2,7 +2,7 @@
 
 1. Check if python is already installed on Pi
   ```bash
-        python3 --version 
+    python3 --version 
   ```
   The output should be something like ```Python 3.11``` or any other version 
   
