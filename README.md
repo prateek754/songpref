@@ -1,23 +1,24 @@
 ## The readme file contains information about running the python code in Raspberry Pi
 
 1. Check if python is already installed on Pi
-	```bash
+  ```bash
         python3 --version 
-	```
-	The output should be something like ```Python 3.11``` or any other version 
+  ```
+  The output should be something like ```Python 3.11``` or any other version 
+  
 2. Install ```pip``` if not installed
   ```bash
     sudo apt install python3-pip
   ```
 3. Install the required pakages ``` RPi.GPIO ``` and ```pygame```
-	```bash
+  ```bash
    pip3 install RPi.GPIO
   ```
   ```bash
    pip3 install pygame
   ```
 4. Go to the folder where the python script is stored via ```cd``` command and enter
-   ```bash
+  ```bash
     python prefscript.py
   ```
   The program should run now and will ask for bird ID and Experimental condition (A or B)
