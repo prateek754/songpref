@@ -21,5 +21,7 @@
     python prefscript.py
   ```
   The program should run now and will ask for bird ID and Experimental condition (A or B)
+
 5. To stop the program, press ```Ctrl + C``` in the terminal
+
 6. The data will be saved in the same folder as the script with the name format specified in the script 
