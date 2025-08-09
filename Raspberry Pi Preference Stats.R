@@ -12,7 +12,7 @@
 ############################################
 
 # 1. The first section contains code for data cleaning 
-# If you directly want to analyze the data, you can skip this section
+# If you directly want to analyze the data, you can skip this section and go to line 88
 
 ###########################################
 
@@ -148,12 +148,27 @@ bird_effects
 
 # Posterior intervals
 
-posterior_interval(model5, prob = 0.95)
+posterior_interval(model5, prob = 0.90)
 
 # Extract posterior samples
 posterior_samples <- as.matrix(model5)
 fixed_effects <- posterior_samples[, 1:3]
 time_seq <- seq(min(pref_data$time_std), max(pref_data$time_std), length.out = 100)
+
+
+# Calculate overall predicted probabilities across the time sequence
+intercept_samples <- posterior_samples[, "(Intercept)"]
+time_samples <- posterior_samples[, "time_std"]
+overall_prob_samples <- sapply(time_seq, function(t) {
+  plogis(intercept_samples + time_samples * t)
+})
+
+# Calculate mean and 90% credible intervals for overall predicted probabilities
+
+mean_overall_prob <- mean(overall_prob_samples) * 100
+overall_ci <- quantile(overall_prob_samples, c(0.05, 0.95)) * 100
+round(mean_overall_prob, 1)
+round(overall_ci, 1)
 
 # Create a new data frame for predictions
 new_data <- expand.grid(
@@ -177,4 +192,70 @@ ggplot(new_data, aes(x = time_std, y = predicted_prob, color = ID, group = ID)) 
         axis.line.x = element_blank(),
         axis.ticks.y = element_line(color = "black"),
         panel.grid = element_blank())
+
+## 90% CIs for each bird overall throughout the time point for Figure 2
+dtci <- as.data.table(new_data)
+dtci[, `:=`(
+  lower_ci = apply(predicted_probs, 2, quantile, probs = 0.05),
+  upper_ci = apply(predicted_probs, 2, quantile, probs = 0.95)
+)]
+bird_ci <- dtci[, .(
+     overall_lower = min(lower_ci),
+     overall_upper = max(upper_ci)
+   ), by = ID][, ci_90 := paste0("90% CI: ", round(overall_lower, 3), "-", round(overall_upper, 3))]
+
+print(bird_ci[, list(ID, ci_90)])
+
+## for an overall trend of dynamics of preference score across time, we can calculate the mean probability of choice at the start and end of the experiment
+## For "Results section"
+# Extract fixed effects for the model
+fixed_effects <- fixef(model5)
+intercept <- fixed_effects["(Intercept)"]
+time_effect <- fixed_effects["time_std"]
+
+
+# Extract the start and end times of the experiment and corresponding posterior samples
+start_time <- min(pref_data$time_std)
+end_time <- max(pref_data$time_std)
+posterior_samples <- as.matrix(model5)
+intercept_samples <- posterior_samples[, "(Intercept)"]
+time_samples <- posterior_samples[, "time_std"]
+
+# Mean and 90% CI at Start of experiment 
+start_intercept_samples <- intercept_samples + (time_samples * start_time)
+start_prob_samples <- plogis(start_intercept_samples)
+start_prob <- mean(start_prob_samples) * 100
+start_ci <- quantile(start_prob_samples, c(0.05, 0.95)) * 100
+
+# Mean and 90% CI at End of experiment  
+end_intercept_samples <- intercept_samples + (time_samples * end_time)
+end_prob_samples <- plogis(end_intercept_samples)
+end_prob <- mean(end_prob_samples) * 100
+end_ci <- quantile(end_prob_samples, c(0.05, 0.95)) * 100
+
+data.frame(
+  timepoint = c("start", "end"),
+  probability = round(c(start_prob, end_prob), 1),
+  ci_lower = round(c(start_ci[1], end_ci[1]), 1),
+  ci_upper = round(c(start_ci[2], end_ci[2]), 1)
+)
+
+
+###### Individual baseline and final choice probabilities for each bird
+
+dt <- as.data.table(new_data)
+dt[, c("lower_ci", "upper_ci") := list(
+  apply(predicted_probs, 2, quantile, probs = 0.05),
+  apply(predicted_probs, 2, quantile, probs = 0.95)
+)]
+
+g683_data <- dt[ID == "G683M"]    # change "G683M" to the ID of the bird you want to analyze
+baseline <- g683_data[time_std == min(time_std)]
+final <- g683_data[time_std == max(time_std)]
+
+# Calculate baseline and final choice probabilities
+baseline_pct <- round(baseline$predicted_prob * 100)
+baseline_ci <- round(c(baseline$lower_ci, baseline$upper_ci) * 100)
+final_pct <- round(final$predicted_prob * 100) 
+final_ci <- round(c(final$lower_ci, final$upper_ci) * 100)
 
